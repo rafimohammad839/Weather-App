@@ -1,49 +1,88 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+
+const api = {
+  key: "404f3c728d0fdf8966d8a53fb9adfcbd",
+  baseURL: "https://api.openweathermap.org/data/2.5/",
+};
 
 const App = () => {
-  const [data, setData] = useState(null);
-  const [query, setQuery] = useState("Delhi");
-  const [location, setLocation] = useState("");
+  const [query, setQuery] = useState("");
+  const [weather, setWeather] = useState({});
 
-  const api = {
-    key: "404f3c728d0fdf8966d8a53fb9adfcbd",
-    baseURL: "https://api.openweathermap.org/data/2.5/",
+  const search = (event) => {
+    if (event.key === "Enter") {
+      fetch(`${api.baseURL}weather?q=${query}&units=metric&APPID=${api.key}`)
+        .then((response) => response.json())
+        .then((data) => {
+          setQuery("");
+          setWeather(data);
+        });
+    }
   };
 
-  useEffect(() => {
-    fetch(`${api.baseURL}weather?q=${query}&&appid=${api.key}&units=metric`)
-      .then((res) => res.json())
-      .then((data) => {
-        setData(data);
-      });
-  }, [location]);
+  const dateBuilder = (d) => {
+    let months = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ];
+    let days = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
+    const day = days[d.getDay()];
+    const date = d.getDate();
+    const month = months[d.getMonth()];
+    const year = d.getFullYear();
 
-  const showTemp = () => {
-    setLocation(query);
+    return `${day} ${date} ${month} ${year}`;
   };
 
   return (
-    <div className="container">
-      <div className={`weather-app ${data?.main?.temp < 20 ? 'cold': ''}`}>
-        <div className="search">
+    <div className={`app ${weather?.main?.temp > 25 ? 'warm' : ''}`}>
+      <main>
+        <div className="search-box">
           <input
             type="text"
-            placeholder="Enter city..."
-            onChange={(e) => setQuery(e.target.value.toLowerCase())}
+            className="search-bar"
+            placeholder="Search..."
+            onChange={(e) => setQuery(e.target.value)}
+            value={query}
+            onKeyDown={search}
           />
-          <button type="button" onClick={showTemp}>
-            Search
-          </button>
         </div>
-        {data && (
-          <div className="weather-data">
-            <p>{data.name}, {data.sys.country}</p>
-            <p>{data.main.temp} °C </p>
-            <p>{data.weather[0].main}</p>
+        {weather.main !== undefined ? (
+          <div>
+            <div className="location-box">
+              <div className="location">
+                {weather.name}, {weather.sys.country}
+              </div>
+              <div className="date">{dateBuilder(new Date())}</div>
+            </div>
+            <div className="weather-box">
+              <div className="temp">{Math.trunc(weather.main.temp)} °C</div>
+              <div className="weather">{weather.weather[0].main}</div>
+            </div>
           </div>
+        ) : (
+          ""
         )}
-      </div>
+      </main>
     </div>
   );
 };
