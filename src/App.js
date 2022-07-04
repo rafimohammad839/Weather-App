@@ -1,25 +1,51 @@
-import logo from './logo.svg';
-import './App.css';
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useEffect, useState } from "react";
 
-function App() {
+const App = () => {
+  const [data, setData] = useState(null);
+  const [query, setQuery] = useState("Delhi");
+  const [location, setLocation] = useState("");
+
+  const api = {
+    key: "404f3c728d0fdf8966d8a53fb9adfcbd",
+    baseURL: "https://api.openweathermap.org/data/2.5/",
+  };
+
+  useEffect(() => {
+    fetch(`${api.baseURL}weather?q=${query}&&appid=${api.key}&units=metric`)
+      .then((res) => res.json())
+      .then((data) => {
+        setData(data);
+      });
+  }, [location]);
+
+  const showTemp = () => {
+    setLocation(query);
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="container">
+      <div className={`weather-app ${data?.main?.temp < 20 ? 'cold': ''}`}>
+        <div className="search">
+          <input
+            type="text"
+            placeholder="Enter city..."
+            onChange={(e) => setQuery(e.target.value.toLowerCase())}
+          />
+          <button type="button" onClick={showTemp}>
+            Search
+          </button>
+        </div>
+        {data && (
+          <div className="weather-data">
+            <p>{data.name}, {data.sys.country}</p>
+            <p>{data.main.temp} °C </p>
+            <p>{data.weather[0].main}</p>
+          </div>
+        )}
+      </div>
     </div>
   );
-}
+};
 
 export default App;
